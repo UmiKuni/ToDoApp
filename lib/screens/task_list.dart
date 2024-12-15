@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:todoapp/models/task.dart';
 import 'package:todoapp/screens/task_create.dart';
+import 'package:todoapp/screens/task_detail.dart';
 import 'package:todoapp/utils/database_helper.dart';
 
 class TaskList extends StatefulWidget {
@@ -83,6 +84,16 @@ class _TaskListState extends State<TaskList>{
               onPressed: () { _deleteItem(context, items[index]); updateListView();},
               icon: const Icon(Icons.delete)
           ),
+          onTap: () async {
+            Task? result = await Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => TaskDetail(modifierTask: items[index])),
+            );
+            if (result != null) {
+              _updateItem(context, result);
+              updateListView();
+            }
+          },
         );
       },
     );
@@ -108,6 +119,16 @@ class _TaskListState extends State<TaskList>{
     int result = await databaseHelper.insertTask(task);
     if(result != 0){
       _showSnackBar("Task Added Successfully! at ID: $result");
+    }
+    else{
+      _showSnackBar("ID: $result");
+    }
+  }
+
+  void _updateItem(BuildContext, Task task) async {
+    int result = await databaseHelper.updateTask(task);
+    if(result != 0){
+      _showSnackBar("Updated at ID: $result");
     }
     else{
       _showSnackBar("ID: $result");

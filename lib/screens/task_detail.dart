@@ -1,30 +1,50 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:todoapp/models/task.dart';
 
-class TaskCreate extends StatefulWidget {
-  const TaskCreate({super.key});
+class TaskDetail extends StatefulWidget{
+  final Task modifierTask;
+  const TaskDetail({super.key, required this.modifierTask});
 
   @override
   State<StatefulWidget> createState(){
-    return _TaskCreateState();
+    return _TaskDetailState();
   }
 }
 
-class _TaskCreateState extends State<TaskCreate>{
+class _TaskDetailState extends State<TaskDetail>{
   // ==================== Properties ====================
-  final TextEditingController title = TextEditingController();
-  final TextEditingController description = TextEditingController();
-  final List<String> frequencies = ["Daily", "Weekly", "Monthly", "Yearly"]; // Danh sách các lựa chọn
+  late final TextEditingController title;
+  late final TextEditingController description;
+  final List<String> frequencies = ["Daily", "Weekly", "Monthly", "Yearly"];
   String? selectedFrequency;
   DateTime? selectedDate;
+
+  @override
+  void initState() {
+    super.initState();
+    // Khởi tạo các controller từ modifierTask
+    title = TextEditingController(text: widget.modifierTask.title);
+    description = TextEditingController(text: widget.modifierTask.description);
+    selectedFrequency = widget.modifierTask.frequency;
+    selectedDate = DateFormat("d MMM yyyy").parse(widget.modifierTask.duedate);
+  }
+
+  @override
+  void dispose() {
+    // Giải phóng tài nguyên của controller
+    title.dispose();
+    description.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Theme.of(context).colorScheme.inversePrimary,
-        title: const Text("Create Task"),
+        title: const Text("Edit Task"),
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0), // Padding bên ngoài
@@ -134,13 +154,13 @@ class _TaskCreateState extends State<TaskCreate>{
                   backgroundColor: Colors.black,
                 ),
                 onPressed: () {
-                  Task newItem = Task(title.text, description.text, selectedFrequency!, DateFormat('d MMM yyyy').format(selectedDate!));
+                  Task newItem = Task.withId(widget.modifierTask.id, title.text, description.text, selectedFrequency!, DateFormat('d MMM yyyy').format(selectedDate!));
                   Navigator.pop(context, newItem);
                 },
                 child: const Text(
-                  "Add",
+                  "Edit",
                   style: TextStyle(
-                    color: Colors.white, // Đặt màu văn bản
+                    color: Colors.white,
                     fontSize: 15,       // Kích thước chữ
                     fontWeight: FontWeight.normal, // Đậm chữ (nếu cần)
                   ),
@@ -176,7 +196,4 @@ class _TaskCreateState extends State<TaskCreate>{
       ),
     );
   }
-
-  // ==================== Methods ====================
-
 }
