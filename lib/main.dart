@@ -20,7 +20,7 @@ class MyApp extends StatelessWidget {
         '/AddTasks': (context) => const TaskCreate(),
       },
       theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.white),
+        colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepOrange),
         useMaterial3: true,
       ),
     );

@@ -23,8 +23,8 @@ class _TaskCreateState extends State<TaskCreate>{
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: Theme.of(context).colorScheme.inversePrimary,
-        title: const Text("Create Task"),
+        backgroundColor: Theme.of(context).colorScheme.onInverseSurface,
+        title: const Text("Create Task", style: TextStyle(fontWeight: FontWeight.w500)),
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0), // Padding bên ngoài
@@ -41,6 +41,7 @@ class _TaskCreateState extends State<TaskCreate>{
             ),
             TextField(
               controller: title,
+              style: const TextStyle(fontWeight: FontWeight.w500),
               decoration: const InputDecoration(
                 border: OutlineInputBorder(),
               ),
@@ -55,6 +56,7 @@ class _TaskCreateState extends State<TaskCreate>{
             ),
             TextField(
               controller: description,
+              style: const TextStyle(fontWeight: FontWeight.w500),
               decoration: const InputDecoration(
                 border: OutlineInputBorder(),
               ),
@@ -118,6 +120,7 @@ class _TaskCreateState extends State<TaskCreate>{
                   selectedDate != null
                       ? "${selectedDate!.toLocal()}".split(' ')[0]
                       : "",
+                  style: const TextStyle(fontWeight: FontWeight.w500),
                 ),
               ),
             ),
@@ -134,8 +137,17 @@ class _TaskCreateState extends State<TaskCreate>{
                   backgroundColor: Colors.black,
                 ),
                 onPressed: () {
-                  Task newItem = Task(title.text, description.text, selectedFrequency!, DateFormat('d MMM yyyy').format(selectedDate!));
-                  Navigator.pop(context, newItem);
+                  if(title.text == "" || description.text == "" || selectedFrequency == null || selectedDate == null){
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                        content: Text("Please enter valid information"),
+                      ),
+                    );
+                  }
+                  else{
+                    Task newItem = Task(title.text, description.text, selectedFrequency!, DateFormat('d MMM yyyy').format(selectedDate!));
+                    Navigator.pop(context, newItem);
+                  }
                 },
                 child: const Text(
                   "Add",

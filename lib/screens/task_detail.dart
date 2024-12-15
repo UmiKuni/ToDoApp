@@ -43,8 +43,8 @@ class _TaskDetailState extends State<TaskDetail>{
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: Theme.of(context).colorScheme.inversePrimary,
-        title: const Text("Edit Task"),
+        backgroundColor: Theme.of(context).colorScheme.primary,
+        title: const Text("Edit Task", style: TextStyle(fontWeight: FontWeight.w500)),
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0), // Padding bên ngoài
@@ -56,11 +56,12 @@ class _TaskDetailState extends State<TaskDetail>{
             const Row(
               mainAxisAlignment: MainAxisAlignment.start, // Căn chỉnh các phần tử
               children: [
-                Text('Title'),
+                Text('Title: '),
               ],
             ),
             TextField(
               controller: title,
+              style: const TextStyle(fontWeight: FontWeight.w500),
               decoration: const InputDecoration(
                 border: OutlineInputBorder(),
               ),
@@ -70,11 +71,12 @@ class _TaskDetailState extends State<TaskDetail>{
             const Row(
               mainAxisAlignment: MainAxisAlignment.start, // Căn chỉnh các phần tử
               children: [
-                Text('Description'),
+                Text('Description: '),
               ],
             ),
             TextField(
               controller: description,
+              style: const TextStyle(fontWeight: FontWeight.w500),
               decoration: const InputDecoration(
                 border: OutlineInputBorder(),
               ),
@@ -84,7 +86,7 @@ class _TaskDetailState extends State<TaskDetail>{
             const Row(
               mainAxisAlignment: MainAxisAlignment.start, // Căn chỉnh các phần tử
               children: [
-                Text('Select Frequency'),
+                Text('Frequency: '),
               ],
             ),
             DropdownButtonFormField<String>(
@@ -111,7 +113,7 @@ class _TaskDetailState extends State<TaskDetail>{
             const Row(
               mainAxisAlignment: MainAxisAlignment.start, // Căn chỉnh các phần tử
               children: [
-                Text('Due Date'),
+                Text('Due Date: '),
               ],
             ),
             InkWell(
@@ -138,6 +140,7 @@ class _TaskDetailState extends State<TaskDetail>{
                   selectedDate != null
                       ? "${selectedDate!.toLocal()}".split(' ')[0]
                       : "",
+                  style: const TextStyle(fontWeight: FontWeight.w500),
                 ),
               ),
             ),
@@ -151,11 +154,20 @@ class _TaskDetailState extends State<TaskDetail>{
                     borderRadius: BorderRadius.circular(10),
                   ),
                   padding: const EdgeInsets.symmetric(vertical: 16),
-                  backgroundColor: Colors.black,
+                  backgroundColor: Theme.of(context).colorScheme.primary,
                 ),
                 onPressed: () {
-                  Task newItem = Task.withId(widget.modifierTask.id, title.text, description.text, selectedFrequency!, DateFormat('d MMM yyyy').format(selectedDate!));
-                  Navigator.pop(context, newItem);
+                  if(title.text == "" || description.text == "" || selectedFrequency == null || selectedDate == null){
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                        content: Text("New information is not valid"),
+                      ),
+                    );
+                  }
+                  else{
+                    Task newItem = Task.withId(widget.modifierTask.id, title.text, description.text, selectedFrequency!, DateFormat('d MMM yyyy').format(selectedDate!));
+                    Navigator.pop(context, newItem);
+                  }
                 },
                 child: const Text(
                   "Edit",

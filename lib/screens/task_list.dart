@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:todoapp/models/task.dart';
 import 'package:todoapp/screens/task_create.dart';
@@ -21,12 +22,16 @@ class _TaskListState extends State<TaskList>{
   List<Task> items = [];
   int count = 0;
   Map<int, bool> checkboxStates = {};
+  final TextEditingController searchQuery = TextEditingController();
+  final List<String> sortQuery = ["Created Date", "A - Z", "Z - A", "Due date"];
+  final List<String> filterQuery = ["Completed", "Uncompleted", "This year", "This month"];
+  bool isReturned = false;
+  String sortType = "Created Date";
 
   @override
   void initState() {
     super.initState();
     updateListView();
-    debugPrint('initState - Called once when screen is created');
   }
 
   @override
@@ -34,12 +39,87 @@ class _TaskListState extends State<TaskList>{
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Theme.of(context).colorScheme.inversePrimary,
-        title: const Text("Tasks"),
+        title: const Text("Tasks", style: TextStyle(fontWeight: FontWeight.w500),),
+        actions: [
+          if(isReturned)...[
+            IconButton(
+                onPressed: (){
+                  updateListView();
+                },
+                icon: Icon(Icons.cancel))
+          ],
+          IconButton(
+            icon: const Icon(Icons.search),
+            onPressed: (){
+              showDialog(
+                  context: context,
+                  builder: (context) => searchDialog(context)
+              );
+            },),
+          PopupMenuButton<String>(
+            onSelected: (String value) {
+              // Xử lý khi chọn item
+              print('You selected: $value');
+              switch(value){
+                case 'Sort By':
+                  break;
+                case 'Filter':
+                  showDialog(
+                      context: context,
+                      builder: (context) => filterDialog(context)
+                  );
+                  break;
+                case 'Progress':
+                  showDialog(
+                      context: context,
+                      builder: (context) => progressDialog(context)
+                  );
+                  break;
+                case 'Settings':
+                  break;
+              }
+            },
+            itemBuilder: (BuildContext context) => [
+              PopupMenuItem<String>(
+                value: 'Sort By',
+                child: Text('Sort By'),
+              ),
+              PopupMenuItem<String>(
+                value: 'Filter',
+                child: Text('Filter'),
+
+              ),
+              PopupMenuItem<String>(
+                value: 'Progress',
+                child: Text('Progress'),
+
+              ),
+              PopupMenuItem<String>(
+                value: 'Settings',
+                child: Text('Settings'),
+              ),
+            ],
+          ),
+        ],
       ),
       body: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
-          children: <Widget>[
+          children: [
+            Row(
+              children: [
+                SizedBox(width: 10, height: 50),
+                Icon(Icons.sort_outlined),
+                Text(
+                  sortType,
+                  style: const TextStyle(
+                    fontWeight: FontWeight.w500,
+                    color: Colors.deepOrange,
+                    fontSize: 17,
+                  ),
+                ),
+              ],
+            ),
             Expanded(
               child: getTaskListView(),
             ),
@@ -118,20 +198,14 @@ class _TaskListState extends State<TaskList>{
   void _addItem(BuildContext context, Task task) async {
     int result = await databaseHelper.insertTask(task);
     if(result != 0){
-      _showSnackBar("Task Added Successfully! at ID: $result");
-    }
-    else{
-      _showSnackBar("ID: $result");
+      _showSnackBar("Task Added Successfully!");
     }
   }
 
   void _updateItem(BuildContext, Task task) async {
     int result = await databaseHelper.updateTask(task);
     if(result != 0){
-      _showSnackBar("Updated at ID: $result");
-    }
-    else{
-      _showSnackBar("ID: $result");
+      _showSnackBar("Updated Successfully!");
     }
   }
 
@@ -141,11 +215,187 @@ class _TaskListState extends State<TaskList>{
       Future<List<Task>> taskListFuture = databaseHelper.getTaskList();
       taskListFuture.then((taskList){
         setState(() {
+          isReturned = false;
           items = taskList;
           count = taskList.length;
         });
       });
     });
+  }
+
+  void searchList(String query) {
+    final Future<Database> dbFuture = databaseHelper.initializeDatabase();
+    dbFuture.then((database) {
+      Future<List<Task>> taskListFuture = databaseHelper.searchTask(query);
+      taskListFuture.then((taskList){
+        setState(() {
+          isReturned = true;
+          items = taskList;
+          count = taskList.length;
+        });
+      });
+    });
+
+  }
+
+  void sortListView(String query){
+
+  }
+
+  void filterListView(String query){
+    int count = items.length;
+    List<Task> filterList = [];
+
+    switch(query){
+      case 'Completed':
+        for(int i = 0; i < count; i++){
+          if(checkboxStates[items[i].id] == true){
+            filterList.add(items[i]);
+          }
+        }
+        break;
+      case 'Uncompleted':
+        for(int i = 0; i < count; i++){
+          if(checkboxStates[items[i].id] == false){
+            filterList.add(items[i]);
+          }
+        }
+        break;
+      case 'This year':
+        int currentYear = DateTime.now().year;
+        for(int i = 0; i < count; i++){
+          DateTime dt = DateFormat("d MMM yyyy").parse(items[i].duedate);
+          if(dt.year == currentYear ){
+            filterList.add(items[i]);
+          }
+        }
+        break;
+      case 'This month':
+        int currentYear = DateTime.now().year;
+        int currentMonth = DateTime.now().month;
+        for(int i = 0; i < count; i++){
+          DateTime dt = DateFormat("d MMM yyyy").parse(items[i].duedate);
+          if(dt.year == currentYear && dt.month == currentMonth){
+            filterList.add(items[i]);
+          }
+        }
+        break;
+    }
+    setState(() {
+      isReturned = true;
+      items = filterList;
+      count = filterList.length;
+    });
+  }
+
+  Widget searchDialog(BuildContext context) {
+    return AlertDialog(
+      title: const Text('Searching'),
+      content: TextField(
+        controller: searchQuery,
+        decoration: const InputDecoration(
+          hintText: 'Find tasks',
+          border: OutlineInputBorder(),
+        ),
+      ),
+      actions: [
+        TextButton(
+          child: const Text('Cancel'),
+          onPressed: () {
+            updateListView();
+            Navigator.of(context).pop(); // Close the dialog
+          },
+        ),
+        ElevatedButton(
+          child: const Text('Find'),
+          onPressed: () {
+            String inputValue = searchQuery.text;
+            if (inputValue.isNotEmpty) {
+              // Process the input
+              searchList(inputValue);
+              Navigator.of(context).pop(); // Close the dialog
+            }
+            else {
+              updateListView();
+            }
+          },
+        ),
+      ],
+    );
+  }
+
+  Widget filterDialog(BuildContext context) {
+    return AlertDialog(
+      title: const Text("Filter"),
+      content: SizedBox(
+        width: double.maxFinite, // Take maximum width
+        height: 250, // Fixed height or adjust as needed
+        child: ListView.builder(
+        shrinkWrap: true,
+        itemCount: filterQuery.length,
+        itemBuilder: (context, index){
+          return ListTile(
+            title: Text(filterQuery[index]),
+            onTap: (){
+              filterListView(filterQuery[index]);
+              Navigator.pop(context, filterQuery[index]);
+            },
+          );},
+      ),
+      ),
+      actions: [
+        TextButton(
+          child: const Text('Cancel'),
+          onPressed: () {
+            updateListView();
+            Navigator.of(context).pop(); // Close the dialog
+          },
+        ),
+      ],
+    );
+  }
+
+  Widget progressDialog(BuildContext context){
+    int comp = 0;
+    int uncomp = 0;
+    int size = items.length;
+    for (int i = 0; i < size; i++){
+      if(checkboxStates[items[i].id] == true){
+        comp++;
+      }
+      else{
+        uncomp++;
+      }
+    }
+    int progress = (100 * comp/size).toInt();
+    return AlertDialog(
+      title: Text("Current Progress: $progress%"),
+      content: SizedBox(
+        width: double.maxFinite, // Take maximum width
+        height: 170,
+        child: Column(
+          children: [
+            ListTile(
+                title: Text("Total tasks: " + count.toString())
+            ),
+            ListTile(
+                title: Text("Completed tasks: " + comp.toString())
+            ),
+            ListTile(
+                title: Text("Uncompleted tasks: " + uncomp.toString())
+            ),
+          ],
+        )
+      ),
+      actions: [
+        TextButton(
+          child: const Text('Close'),
+          onPressed: () {
+            Navigator.of(context).pop(); // Close the dialog
+          },
+        ),
+      ],
+    );
   }
 }
 

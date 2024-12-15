@@ -106,5 +106,21 @@ class DatabaseHelper {
 
     return taskList;
   }
+  
+  // Search Operations
+  Future<List<Task>> searchTask(String query) async {
+    Database db = await this.database;
+
+    var result = await db.rawQuery('SELECT * FROM $taskTable WHERE $colTitle LIKE ?', ['%$query%']);
+
+    int count = result.length;
+    List<Task> taskList = [];
+
+    for(int i = 0; i < count; i++){
+      taskList.add(Task.fromMapObject(result[i]));
+    }
+
+    return taskList;
+  }
 // ==================== END REGION ====================
 }
