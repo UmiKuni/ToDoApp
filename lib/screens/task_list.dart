@@ -17,9 +17,10 @@ class _TaskListState extends State<TaskList>{
 
   // ==================== Properties ====================
   DatabaseHelper databaseHelper = DatabaseHelper();
-  Task ex = Task("Wake up", "morning", "daily", "29 Nov");
   List<Task> items = [];
   int count = 0;
+  Map<int, bool> checkboxStates = {};
+
   @override
   void initState() {
     super.initState();
@@ -66,10 +67,18 @@ class _TaskListState extends State<TaskList>{
     return ListView.builder(
       itemCount: items.length,
       itemBuilder: (context, index) {
+        bool isChecked = checkboxStates[items[index].id] ?? false;
         return ListTile(
+          tileColor: Colors.white70,
           title: Text(items[index].title),
           subtitle: Text(items[index].duedate),
-          leading: Checkbox(value: true, onChanged: (bool? value){}),
+          leading: Checkbox(
+              value: isChecked,
+              onChanged: (bool? value){
+                setState(() {
+                  checkboxStates[items[index].id ?? 0] = value ?? false;
+                });
+              }),
           trailing: IconButton(
               onPressed: () { _deleteItem(context, items[index]); updateListView();},
               icon: const Icon(Icons.delete)
