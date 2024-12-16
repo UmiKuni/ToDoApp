@@ -23,15 +23,18 @@ class _TaskListState extends State<TaskList>{
   int count = 0;
   Map<int, bool> checkboxStates = {};
   final TextEditingController searchQuery = TextEditingController();
-  final List<String> sortQuery = ["Created Date", "A - Z", "Z - A", "Due date"];
-  final List<String> filterQuery = ["Completed", "Uncompleted", "This year", "This month"];
+  final List<String> sortQuery = ["Latest Create", "Newest Create", "A to Z", "Z to A"];
+  final List<String> filterQuery = ['Completed', 'Uncompleted', 'This year', 'This month'];
   bool isReturned = false;
-  String sortType = "Created Date";
+  String filterState = "";
+  late String sortType;
 
   @override
   void initState() {
     super.initState();
-    updateListView();
+    filterState = "";
+    sortType = sortQuery[0];
+    updateListView(sortType);
   }
 
   @override
@@ -44,7 +47,7 @@ class _TaskListState extends State<TaskList>{
           if(isReturned)...[
             IconButton(
                 onPressed: (){
-                  updateListView();
+                  updateListView(sortType);
                 },
                 icon: Icon(Icons.cancel))
           ],
@@ -59,9 +62,12 @@ class _TaskListState extends State<TaskList>{
           PopupMenuButton<String>(
             onSelected: (String value) {
               // Xử lý khi chọn item
-              print('You selected: $value');
               switch(value){
                 case 'Sort By':
+                  showDialog(
+                      context: context,
+                      builder: (context) => sortDialog(context)
+                  );
                   break;
                 case 'Filter':
                   showDialog(
@@ -75,28 +81,21 @@ class _TaskListState extends State<TaskList>{
                       builder: (context) => progressDialog(context)
                   );
                   break;
-                case 'Settings':
-                  break;
               }
             },
             itemBuilder: (BuildContext context) => [
-              PopupMenuItem<String>(
+              const PopupMenuItem<String>(
                 value: 'Sort By',
                 child: Text('Sort By'),
               ),
-              PopupMenuItem<String>(
+              const PopupMenuItem<String>(
                 value: 'Filter',
                 child: Text('Filter'),
-
               ),
-              PopupMenuItem<String>(
+              const PopupMenuItem<String>(
                 value: 'Progress',
                 child: Text('Progress'),
 
-              ),
-              PopupMenuItem<String>(
-                value: 'Settings',
-                child: Text('Settings'),
               ),
             ],
           ),
@@ -111,7 +110,7 @@ class _TaskListState extends State<TaskList>{
                 SizedBox(width: 10, height: 50),
                 Icon(Icons.sort_outlined),
                 Text(
-                  sortType,
+                  sortType + filterState,
                   style: const TextStyle(
                     fontWeight: FontWeight.w500,
                     color: Colors.deepOrange,
@@ -134,7 +133,7 @@ class _TaskListState extends State<TaskList>{
           );
           if (result != null) {
             _addItem(context, result);
-            updateListView();
+            updateListView(sortType);
           }
         },
         tooltip: 'Increment',
@@ -161,7 +160,7 @@ class _TaskListState extends State<TaskList>{
                 });
               }),
           trailing: IconButton(
-              onPressed: () { _deleteItem(context, items[index]); updateListView();},
+              onPressed: () { _deleteItem(context, items[index]); updateListView(sortType);},
               icon: const Icon(Icons.delete)
           ),
           onTap: () async {
@@ -171,7 +170,7 @@ class _TaskListState extends State<TaskList>{
             );
             if (result != null) {
               _updateItem(context, result);
-              updateListView();
+              updateListView(sortType);
             }
           },
         );
@@ -183,7 +182,7 @@ class _TaskListState extends State<TaskList>{
     int result = await databaseHelper.deleteTask(task.id);
     if(result != 0){
       _showSnackBar("Task Deleted Successfully!");
-      updateListView();
+      updateListView(sortType);
     }
   }
 
@@ -209,14 +208,16 @@ class _TaskListState extends State<TaskList>{
     }
   }
 
-  void updateListView(){
+  void updateListView(String sortQuery){
     final Future<Database> dbFuture = databaseHelper.initializeDatabase();
     dbFuture.then((database) {
       Future<List<Task>> taskListFuture = databaseHelper.getTaskList();
       taskListFuture.then((taskList){
         setState(() {
+          filterState = "";
           isReturned = false;
-          items = taskList;
+          items = sortWithQuery(sortQuery, taskList);
+          sortType = sortQuery;
           count = taskList.length;
         });
       });
@@ -235,35 +236,102 @@ class _TaskListState extends State<TaskList>{
         });
       });
     });
-
   }
 
-  void sortListView(String query){
-
+  List<Task> sortWithQuery(String query, List<Task> newList){
+    if(query != sortType){
+      switch(query){
+        case 'Latest Create':
+          newList = _sortLatestCreate(newList);
+          break;
+        case 'Newest Create':
+          newList = _sortNewestCreate(newList);
+          break;
+        case 'A to Z':
+          newList = _sortAtoZ(newList);
+          break;
+        case 'Z to A':
+          newList = _sortZtoA(newList);
+          break;
+      }
+    }
+    return newList;
+  }
+  List<Task> _sortLatestCreate(List<Task> list){
+    int size = list.length;
+    for(int i = 0; i < size - 1; i++){
+      for(int j = i + 1; j < size; j++){
+        if(list[i].id! > list[j].id!){
+          Task pre = list[i];
+          list[i] = list[j];
+          list[j] = pre;
+        }
+      }
+    }
+    return list;
+  }
+  List<Task> _sortNewestCreate(List<Task> list){
+    int size = list.length;
+    for(int i = 0; i < size - 1; i++){
+      for(int j = i + 1; j < size; j++){
+        if(list[i].id! < list[j].id!){
+          Task pre = list[i];
+          list[i] = list[j];
+          list[j] = pre;
+        }
+      }
+    }
+    return list;
+  }
+  List<Task> _sortAtoZ(List<Task> list){
+    int size = list.length;
+    for(int i = 0; i < size - 1; i++){
+      for(int j = i + 1; j < size; j++){
+        if(list[i].title[0].toLowerCase().compareTo(list[j].title[0].toLowerCase()) > 0){
+          Task pre = list[i];
+          list[i] = list[j];
+          list[j] = pre;
+        }
+      }
+    }
+    return list;
+  }
+  List<Task> _sortZtoA(List<Task> list){
+    int size = list.length;
+    for(int i = 0; i < size - 1; i++){
+      for(int j = i + 1; j < size; j++){
+        if(list[j].title[0].toLowerCase().compareTo(list[i].title[0].toLowerCase()) > 0){
+          Task pre = list[i];
+          list[i] = list[j];
+          list[j] = pre;
+        }
+      }
+    }
+    return list;
   }
 
   void filterListView(String query){
-    int count = items.length;
+    int size = items.length;
     List<Task> filterList = [];
 
     switch(query){
       case 'Completed':
-        for(int i = 0; i < count; i++){
+        for(int i = 0; i < size; i++){
           if(checkboxStates[items[i].id] == true){
             filterList.add(items[i]);
           }
         }
         break;
       case 'Uncompleted':
-        for(int i = 0; i < count; i++){
-          if(checkboxStates[items[i].id] == false){
+        for(int i = 0; i < size; i++){
+          if(checkboxStates[items[i].id] == false || checkboxStates[items[i].id] == null){
             filterList.add(items[i]);
           }
         }
         break;
       case 'This year':
         int currentYear = DateTime.now().year;
-        for(int i = 0; i < count; i++){
+        for(int i = 0; i < size; i++){
           DateTime dt = DateFormat("d MMM yyyy").parse(items[i].duedate);
           if(dt.year == currentYear ){
             filterList.add(items[i]);
@@ -273,7 +341,7 @@ class _TaskListState extends State<TaskList>{
       case 'This month':
         int currentYear = DateTime.now().year;
         int currentMonth = DateTime.now().month;
-        for(int i = 0; i < count; i++){
+        for(int i = 0; i < size; i++){
           DateTime dt = DateFormat("d MMM yyyy").parse(items[i].duedate);
           if(dt.year == currentYear && dt.month == currentMonth){
             filterList.add(items[i]);
@@ -282,6 +350,9 @@ class _TaskListState extends State<TaskList>{
         break;
     }
     setState(() {
+      if(!filterState.contains(query)){
+        filterState += " | $query";
+      }
       isReturned = true;
       items = filterList;
       count = filterList.length;
@@ -302,7 +373,7 @@ class _TaskListState extends State<TaskList>{
         TextButton(
           child: const Text('Cancel'),
           onPressed: () {
-            updateListView();
+            updateListView(sortType);
             Navigator.of(context).pop(); // Close the dialog
           },
         ),
@@ -316,8 +387,42 @@ class _TaskListState extends State<TaskList>{
               Navigator.of(context).pop(); // Close the dialog
             }
             else {
-              updateListView();
+              updateListView(sortType);
             }
+          },
+        ),
+      ],
+    );
+  }
+
+  Widget sortDialog(BuildContext context) {
+    return AlertDialog(
+      title: const Text("Sort By"),
+      content: SizedBox(
+        width: double.maxFinite, // Take maximum width
+        height: 230, // Fixed height or adjust as needed
+        child: ListView.builder(
+          shrinkWrap: true,
+          itemCount: sortQuery.length,
+          itemBuilder: (context, index){
+            return ListTile(
+              leading: (sortQuery[index] == sortType)
+                  ? Icon(Icons.check_circle) // Hiện biểu tượng nếu điều kiện đúng
+                  : Icon(Icons.circle_outlined),
+              title: Text(sortQuery[index]),
+              onTap: (){
+                updateListView(sortQuery[index]);
+                Navigator.pop(context, sortQuery[index]);
+              },
+            );},
+        ),
+      ),
+      actions: [
+        TextButton(
+          child: const Text('Cancel'),
+          onPressed: () {
+            updateListView(sortType);
+            Navigator.of(context).pop(); // Close the dialog
           },
         ),
       ],
@@ -335,6 +440,7 @@ class _TaskListState extends State<TaskList>{
         itemCount: filterQuery.length,
         itemBuilder: (context, index){
           return ListTile(
+            leading: Icon(Icons.filter_alt),
             title: Text(filterQuery[index]),
             onTap: (){
               filterListView(filterQuery[index]);
@@ -347,7 +453,7 @@ class _TaskListState extends State<TaskList>{
         TextButton(
           child: const Text('Cancel'),
           onPressed: () {
-            updateListView();
+            updateListView(sortType);
             Navigator.of(context).pop(); // Close the dialog
           },
         ),
