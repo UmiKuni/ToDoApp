@@ -24,7 +24,7 @@ class _TaskListState extends State<TaskList>{
   Map<int, bool> checkboxStates = {};
   final TextEditingController searchQuery = TextEditingController();
   final List<String> sortQuery = ["Latest Create", "Newest Create", "A to Z", "Z to A"];
-  final List<String> filterQuery = ['Completed', 'Uncompleted', 'This year', 'This month'];
+  final List<String> filterQuery = ['Completed', 'Uncompleted', 'Today', 'This month', 'This year'];
   bool isReturned = false;
   String filterState = "";
   late String sortType;
@@ -107,8 +107,16 @@ class _TaskListState extends State<TaskList>{
           children: [
             Row(
               children: [
-                SizedBox(width: 10, height: 50),
-                Icon(Icons.sort_outlined),
+                const SizedBox(width: 10, height: 50),
+                IconButton(
+                  icon: const Icon(Icons.sort_outlined),
+                  onPressed: () {
+                    showDialog(
+                        context: context,
+                        builder: (context) => sortDialog(context)
+                    );
+                  },
+                ),
                 Text(
                   sortType + filterState,
                   style: const TextStyle(
@@ -149,7 +157,9 @@ class _TaskListState extends State<TaskList>{
       itemBuilder: (context, index) {
         bool isChecked = checkboxStates[items[index].id] ?? false;
         return ListTile(
-          tileColor: Colors.white70,
+          tileColor: (checkboxStates[items[index].id] == true)
+            ?Colors.black12
+            :Colors.white70,
           title: Text(items[index].title),
           subtitle: Text(items[index].duedate),
           leading: Checkbox(
@@ -348,6 +358,17 @@ class _TaskListState extends State<TaskList>{
           }
         }
         break;
+      case 'Today':
+        int currentDate = DateTime.now().day;
+        int currentYear = DateTime.now().year;
+        int currentMonth = DateTime.now().month;
+        for(int i = 0; i < size; i++){
+          DateTime dt = DateFormat("d MMM yyyy").parse(items[i].duedate);
+          if(dt.year == currentYear && dt.month == currentMonth && dt.day == currentDate){
+            filterList.add(items[i]);
+          }
+        }
+        break;
     }
     setState(() {
       if(!filterState.contains(query)){
@@ -434,7 +455,7 @@ class _TaskListState extends State<TaskList>{
       title: const Text("Filter"),
       content: SizedBox(
         width: double.maxFinite, // Take maximum width
-        height: 250, // Fixed height or adjust as needed
+        height: 270, // Fixed height or adjust as needed
         child: ListView.builder(
         shrinkWrap: true,
         itemCount: filterQuery.length,
