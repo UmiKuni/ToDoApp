@@ -5,7 +5,7 @@ An exercise from GDSC UIT by flutter
 ## Project Overview
 
 ToDoApp is a basic app for taking notes with features such as search, filter, and sort. Tasks can be created and edited with the following components: title, description, frequency, and due date.
-You can get a detailed summary document ![hear](https://docs.google.com/document/d/1iOIOVxfLt7LTL-GsDfQawBMH9Lh_QMYRhrCKn0HdaKM/edit?usp=sharing)
+You can get a detailed summary document ![here](https://docs.google.com/document/d/1iOIOVxfLt7LTL-GsDfQawBMH9Lh_QMYRhrCKn0HdaKM/edit?usp=sharing)
 
 ## Future Feature
 
