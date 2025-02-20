@@ -6,16 +6,21 @@ class TaskCreate extends StatefulWidget {
   const TaskCreate({super.key});
 
   @override
-  State<StatefulWidget> createState(){
+  State<StatefulWidget> createState() {
     return _TaskCreateState();
   }
 }
 
-class _TaskCreateState extends State<TaskCreate>{
+class _TaskCreateState extends State<TaskCreate> {
   // ==================== Properties ====================
   final TextEditingController title = TextEditingController();
   final TextEditingController description = TextEditingController();
-  final List<String> frequencies = ["Daily", "Weekly", "Monthly", "Yearly"]; // Danh sách các lựa chọn
+  final List<String> frequencies = [
+    "Daily",
+    "Weekly",
+    "Monthly",
+    "Yearly"
+  ]; // Danh sách các lựa chọn
   String? selectedFrequency;
   DateTime? selectedDate;
 
@@ -24,7 +29,8 @@ class _TaskCreateState extends State<TaskCreate>{
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Theme.of(context).colorScheme.onInverseSurface,
-        title: const Text("Create Task", style: TextStyle(fontWeight: FontWeight.w500)),
+        title: const Text("Create Task",
+            style: TextStyle(fontWeight: FontWeight.w500)),
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0), // Padding bên ngoài
@@ -32,9 +38,9 @@ class _TaskCreateState extends State<TaskCreate>{
           mainAxisAlignment: MainAxisAlignment.start,
           children: <Widget>[
             const SizedBox(height: 50),
-
             const Row(
-              mainAxisAlignment: MainAxisAlignment.start, // Căn chỉnh các phần tử
+              mainAxisAlignment:
+                  MainAxisAlignment.start, // Căn chỉnh các phần tử
               children: [
                 Text('Title'),
               ],
@@ -47,9 +53,9 @@ class _TaskCreateState extends State<TaskCreate>{
               ),
             ),
             const SizedBox(height: 20),
-
             const Row(
-              mainAxisAlignment: MainAxisAlignment.start, // Căn chỉnh các phần tử
+              mainAxisAlignment:
+                  MainAxisAlignment.start, // Căn chỉnh các phần tử
               children: [
                 Text('Description'),
               ],
@@ -62,9 +68,9 @@ class _TaskCreateState extends State<TaskCreate>{
               ),
             ),
             const SizedBox(height: 20),
-
             const Row(
-              mainAxisAlignment: MainAxisAlignment.start, // Căn chỉnh các phần tử
+              mainAxisAlignment:
+                  MainAxisAlignment.start, // Căn chỉnh các phần tử
               children: [
                 Text('Select Frequency'),
               ],
@@ -89,9 +95,9 @@ class _TaskCreateState extends State<TaskCreate>{
               ),
             ),
             const SizedBox(height: 20),
-
             const Row(
-              mainAxisAlignment: MainAxisAlignment.start, // Căn chỉnh các phần tử
+              mainAxisAlignment:
+                  MainAxisAlignment.start, // Căn chỉnh các phần tử
               children: [
                 Text('Due Date'),
               ],
@@ -104,11 +110,9 @@ class _TaskCreateState extends State<TaskCreate>{
                   firstDate: DateTime(2000),
                   lastDate: DateTime(2100),
                 );
-                if (pickedDate != null) {
-                  setState(() {
-                    selectedDate = pickedDate;
-                  });
-                }
+                setState(() {
+                  selectedDate = pickedDate;
+                });
               },
               child: InputDecorator(
                 decoration: const InputDecoration(
@@ -125,7 +129,6 @@ class _TaskCreateState extends State<TaskCreate>{
               ),
             ),
             const SizedBox(height: 30),
-
             SizedBox(
               width: double.infinity,
               child: ElevatedButton(
@@ -137,15 +140,21 @@ class _TaskCreateState extends State<TaskCreate>{
                   backgroundColor: Colors.black,
                 ),
                 onPressed: () {
-                  if(title.text == "" || description.text == "" || selectedFrequency == null || selectedDate == null){
+                  if (title.text == "" ||
+                      description.text == "" ||
+                      selectedFrequency == null ||
+                      selectedDate == null) {
                     ScaffoldMessenger.of(context).showSnackBar(
                       const SnackBar(
                         content: Text("Please enter valid information"),
                       ),
                     );
-                  }
-                  else{
-                    Task newItem = Task(title.text, description.text, selectedFrequency!, DateFormat('d MMM yyyy').format(selectedDate!));
+                  } else {
+                    Task newItem = Task(
+                        title.text,
+                        description.text,
+                        selectedFrequency!,
+                        DateFormat('d MMM yyyy').format(selectedDate!));
                     Navigator.pop(context, newItem);
                   }
                 },
@@ -153,7 +162,7 @@ class _TaskCreateState extends State<TaskCreate>{
                   "Add",
                   style: TextStyle(
                     color: Colors.white, // Đặt màu văn bản
-                    fontSize: 15,       // Kích thước chữ
+                    fontSize: 15, // Kích thước chữ
                     fontWeight: FontWeight.normal, // Đậm chữ (nếu cần)
                   ),
                 ),
@@ -177,7 +186,7 @@ class _TaskCreateState extends State<TaskCreate>{
                   "Cancel",
                   style: TextStyle(
                     color: Colors.black, // Đặt màu văn bản
-                    fontSize: 15,       // Kích thước chữ
+                    fontSize: 15, // Kích thước chữ
                     fontWeight: FontWeight.normal, // Đậm chữ (nếu cần)
                   ),
                 ),
@@ -190,5 +199,4 @@ class _TaskCreateState extends State<TaskCreate>{
   }
 
   // ==================== Methods ====================
-
 }

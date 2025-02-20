@@ -3,17 +3,17 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:todoapp/models/task.dart';
 
-class TaskDetail extends StatefulWidget{
+class TaskDetail extends StatefulWidget {
   final Task modifierTask;
   const TaskDetail({super.key, required this.modifierTask});
 
   @override
-  State<StatefulWidget> createState(){
+  State<StatefulWidget> createState() {
     return _TaskDetailState();
   }
 }
 
-class _TaskDetailState extends State<TaskDetail>{
+class _TaskDetailState extends State<TaskDetail> {
   // ==================== Properties ====================
   late final TextEditingController title;
   late final TextEditingController description;
@@ -44,7 +44,8 @@ class _TaskDetailState extends State<TaskDetail>{
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Theme.of(context).colorScheme.primary,
-        title: const Text("Edit Task", style: TextStyle(fontWeight: FontWeight.w500)),
+        title: const Text("Edit Task",
+            style: TextStyle(fontWeight: FontWeight.w500)),
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0), // Padding bên ngoài
@@ -52,9 +53,9 @@ class _TaskDetailState extends State<TaskDetail>{
           mainAxisAlignment: MainAxisAlignment.start,
           children: <Widget>[
             const SizedBox(height: 50),
-
             const Row(
-              mainAxisAlignment: MainAxisAlignment.start, // Căn chỉnh các phần tử
+              mainAxisAlignment:
+                  MainAxisAlignment.start, // Căn chỉnh các phần tử
               children: [
                 Text('Title: '),
               ],
@@ -67,9 +68,9 @@ class _TaskDetailState extends State<TaskDetail>{
               ),
             ),
             const SizedBox(height: 20),
-
             const Row(
-              mainAxisAlignment: MainAxisAlignment.start, // Căn chỉnh các phần tử
+              mainAxisAlignment:
+                  MainAxisAlignment.start, // Căn chỉnh các phần tử
               children: [
                 Text('Description: '),
               ],
@@ -82,9 +83,9 @@ class _TaskDetailState extends State<TaskDetail>{
               ),
             ),
             const SizedBox(height: 20),
-
             const Row(
-              mainAxisAlignment: MainAxisAlignment.start, // Căn chỉnh các phần tử
+              mainAxisAlignment:
+                  MainAxisAlignment.start, // Căn chỉnh các phần tử
               children: [
                 Text('Frequency: '),
               ],
@@ -109,9 +110,9 @@ class _TaskDetailState extends State<TaskDetail>{
               ),
             ),
             const SizedBox(height: 20),
-
             const Row(
-              mainAxisAlignment: MainAxisAlignment.start, // Căn chỉnh các phần tử
+              mainAxisAlignment:
+                  MainAxisAlignment.start, // Căn chỉnh các phần tử
               children: [
                 Text('Due Date: '),
               ],
@@ -124,11 +125,9 @@ class _TaskDetailState extends State<TaskDetail>{
                   firstDate: DateTime(2000),
                   lastDate: DateTime(2100),
                 );
-                if (pickedDate != null) {
-                  setState(() {
-                    selectedDate = pickedDate;
-                  });
-                }
+                setState(() {
+                  selectedDate = pickedDate;
+                });
               },
               child: InputDecorator(
                 decoration: const InputDecoration(
@@ -145,7 +144,6 @@ class _TaskDetailState extends State<TaskDetail>{
               ),
             ),
             const SizedBox(height: 30),
-
             SizedBox(
               width: double.infinity,
               child: ElevatedButton(
@@ -157,15 +155,22 @@ class _TaskDetailState extends State<TaskDetail>{
                   backgroundColor: Theme.of(context).colorScheme.primary,
                 ),
                 onPressed: () {
-                  if(title.text == "" || description.text == "" || selectedFrequency == null || selectedDate == null){
+                  if (title.text == "" ||
+                      description.text == "" ||
+                      selectedFrequency == null ||
+                      selectedDate == null) {
                     ScaffoldMessenger.of(context).showSnackBar(
                       const SnackBar(
                         content: Text("New information is not valid"),
                       ),
                     );
-                  }
-                  else{
-                    Task newItem = Task.withId(widget.modifierTask.id, title.text, description.text, selectedFrequency!, DateFormat('d MMM yyyy').format(selectedDate!));
+                  } else {
+                    Task newItem = Task.withId(
+                        widget.modifierTask.id,
+                        title.text,
+                        description.text,
+                        selectedFrequency!,
+                        DateFormat('d MMM yyyy').format(selectedDate!));
                     Navigator.pop(context, newItem);
                   }
                 },
@@ -173,7 +178,7 @@ class _TaskDetailState extends State<TaskDetail>{
                   "Edit",
                   style: TextStyle(
                     color: Colors.white,
-                    fontSize: 15,       // Kích thước chữ
+                    fontSize: 15, // Kích thước chữ
                     fontWeight: FontWeight.normal, // Đậm chữ (nếu cần)
                   ),
                 ),
@@ -197,7 +202,7 @@ class _TaskDetailState extends State<TaskDetail>{
                   "Cancel",
                   style: TextStyle(
                     color: Colors.black, // Đặt màu văn bản
-                    fontSize: 15,       // Kích thước chữ
+                    fontSize: 15, // Kích thước chữ
                     fontWeight: FontWeight.normal, // Đậm chữ (nếu cần)
                   ),
                 ),
