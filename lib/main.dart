@@ -1,22 +1,27 @@
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
+import 'package:todoapp/screens/login.dart';
+import 'package:todoapp/screens/register.dart';
 import 'package:todoapp/screens/task_create.dart';
 import 'package:todoapp/screens/task_list.dart';
+import 'package:todoapp/utils/database_helper.dart';
 
 void main() {
-  runApp(const MyApp());
+  final databaseHelper = DatabaseHelper();
+  runApp(MyApp(db: databaseHelper));
 }
 
 class MyApp extends StatelessWidget {
-  const MyApp({super.key});
-  // This widget is the root of your application.
+  MyApp({super.key, required this.db});
+  final DatabaseHelper db;
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'Flutter Demo',
-      initialRoute: '/', // Đường dẫn mặc định
+      initialRoute: '/Login',
       routes: {
-        '/': (context) => const TaskList(),
+        '/Login': (context) => LoginScreen(databaseHelper: db),
+        '/Register': (context) => RegisterScreen(databaseHelper: db),
+        '/': (context) => TaskList(databaseHelper: db),
         '/AddTasks': (context) => const TaskCreate(),
       },
       theme: ThemeData(
@@ -26,6 +31,3 @@ class MyApp extends StatelessWidget {
     );
   }
 }
-
-
-

@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:todoapp/utils/database_helper.dart';
 
 class RegisterScreen extends StatefulWidget {
-  const RegisterScreen({Key? key}) : super(key: key);
+  final DatabaseHelper databaseHelper;
+  const RegisterScreen({super.key, required this.databaseHelper});
 
   @override
   State<RegisterScreen> createState() => _RegisterScreenState();
@@ -15,20 +17,26 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
   bool _isLoading = false;
 
-  void _register() {
+  void _register() async{
     if (_formKey.currentState!.validate()) {
       setState(() {
         _isLoading = true;
       });
       // Simulate registration logic
-      Future.delayed(const Duration(seconds: 2), () {
-        setState(() {
-          _isLoading = false;
-        });
+      final result = await widget.databaseHelper.registerUser(
+        _emailController.text,
+        _passwordController.text,
+      );
+      if (result != -1) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Registered successfully!')),
+          const SnackBar(content: Text('Registration successful')),
         );
-      });
+        Navigator.pushNamed(context, '/Login');
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Registration failed')),
+        );
+      }
     }
   }
 

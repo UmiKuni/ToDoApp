@@ -46,12 +46,18 @@ class DatabaseHelper {
   void _createDb(Database db, int newVersion) async {
     
     await db.execute(
-        'CREATE TABLE $taskTable('
-        '$colId INTEGER PRIMARY KEY AUTOINCREMENT, '
-        '$colTitle TEXT, '
-        '$colDescription TEXT, '
-        '$colFrequency TEXT, '
-        '$colDueDate TEXT)');
+      'CREATE TABLE $taskTable('
+      '$colId INTEGER PRIMARY KEY AUTOINCREMENT, '
+      '$colTitle TEXT, '
+      '$colDescription TEXT, '
+      '$colFrequency TEXT, '
+      '$colDueDate TEXT)');
+
+    await db.execute(
+      'CREATE TABLE user_table('
+      'id INTEGER PRIMARY KEY AUTOINCREMENT, '
+      'username TEXT UNIQUE, '
+      'password TEXT)');
   }
 
 // ==================== REGION: API ====================
@@ -121,6 +127,38 @@ class DatabaseHelper {
     }
 
     return taskList;
+  }
+
+  // Register new user
+  Future<int> registerUser(String username, String password) async {
+    Database db = await this.database;
+    try {
+      var result = await db.insert('user_table', {
+        'username': username,
+        'password': password,
+      });
+      return result;
+    } catch (e) {
+      // Return -1 if username already exists or error occurs
+      return -1;
+    }
+  }
+
+  // Login user
+  Future<bool> loginUser(String username, String password) async {
+    Database db = await this.database;
+    await db.execute(
+      'CREATE TABLE IF NOT EXISTS user_table('
+      'id INTEGER PRIMARY KEY AUTOINCREMENT, '
+      'username TEXT UNIQUE, '
+      'password TEXT)'
+    );
+    var result = await db.query(
+      'user_table',
+      where: 'username = ? AND password = ?',
+      whereArgs: [username, password],
+    );
+    return result.isNotEmpty;
   }
 // ==================== END REGION ====================
 }
